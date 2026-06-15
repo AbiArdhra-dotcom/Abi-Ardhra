@@ -1,0 +1,70 @@
+
+import numpy as np
+import pandas as pd
+
+class LibrarySystem:
+    def __init__(self):
+        self.columns = ["title", "author", "status"]
+        self.df = pd.DataFrame(columns=self.columns)
+
+    def add_book(self, title, author):
+        new_book = {"title": title, "author": author, "status": "available"}
+        self.df = pd.concat([self.df, pd.DataFrame([new_book])], ignore_index=True)
+        print(f"Success: '{title}' added to the system.")
+
+    def display_books(self):
+        if self.df.empty:
+            print("\nLibrary is currently empty.")
+            return
+        print("\n--- Current Library Catalog ---")
+        print(self.df.to_string(index=False))
+
+    def borrow_book(self, title):
+        book = self.df["title"].str.lower() == title.lower()
+        if not book.any():
+            print(f"\nError: '{title}' not found.")
+            return
+        
+        current_status = self.df.loc[book, "status"].values[0]
+
+        if current_status == "borrowed":
+            print(f"\nError: '{title}' is already borrowed.")
+        else:
+            self.df["status"] = np.where(book, "borrowed", self.df["status"])
+            print(f"\nSuccess: You have borrowed '{title}'.")
+
+    def return_book(self, title):
+        book = self.df["title"].str.lower() == title.lower()
+        if not book.any():
+            print(f"\nError: '{title}' not found.")
+            return
+        
+        self.df["status"] = np.where(book, "available", self.df["status"])
+        print(f"\nSuccess: You have returned '{title}'.")
+
+
+# --- Safe Automated Interface ---
+def main():
+    lib = LibrarySystem()
+
+    print("--- 1. Testing: Adding Sample Books ---")
+    lib.add_book("You Can Win", "Shiv Khera")
+    lib.add_book("To the Youth of India", "Swami Vivekananda")
+
+    print("\n--- 2. Testing: Viewing Current Catalog ---")
+    lib.display_books()
+
+    print("\n--- 3. Testing: Borrowing a Book ---")
+    lib.borrow_book("You Can Win")
+    lib.display_books()
+
+    print("\n--- 4. Testing: Duplicate Borrow Attempt ---")
+    lib.borrow_book("You Can Win")
+
+    print("\n--- 5. Testing: Returning a Book ---")
+    lib.return_book("You Can Win")
+    lib.display_books()
+
+# Run the program smoothly
+main()
+
